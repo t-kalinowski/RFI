@@ -1,0 +1,2 @@
+PKG_FCFLAGS+=-std=f2018
+PKG_LIBS+=-lgfortran -lm -lquadmath

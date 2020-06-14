@@ -1,0 +1,16 @@
+Package: RFI
+Title: Interface to Modern Fortran
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Tomasz",
+           family = "Kalinowski",
+           role = c("aut", "cre"),
+           email = "kalinowskit@gmail.com")
+Description: Interface with Fortran 2018 code using C descriptors.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.0
+Suggests: 
+    testthat

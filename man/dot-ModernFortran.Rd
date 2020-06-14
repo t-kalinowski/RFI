@@ -4,7 +4,7 @@
 \alias{.ModernFortran}
 \title{Modern Fortran Interface}
 \usage{
-.ModernFortran(.NAME, ..., PACKAGE)
+.ModernFortran(.NAME, ..., PACKAGE, DUP = TRUE)
 }
 \arguments{
 \item{.NAME}{an object of class \code{"NativeSymbol"}, \code{"NativeSymbolInfo"}, or a
@@ -13,6 +13,11 @@ character string giving the name of the subroutine}
 \item{...}{Arguments passed on to the Fortran subroutine.}
 
 \item{PACKAGE}{passed on to \code{\link[=getNativeSymbolInfo]{getNativeSymbolInfo()}}}
+
+\item{DUP}{logical. If \code{TRUE} (the default), all objects passed to \code{...} are
+duplicated before being passed to the Fortran code. If \code{FALSE}, all objects
+are potentially modified in place. Use \code{\link{.dup}} to selectively duplicate
+items.}
 }
 \value{
 A list of similar structure to  supplied to ..., but reflecting
@@ -20,4 +25,27 @@ changes made by the Fortran code
 }
 \description{
 Modern Fortran Interface
+}
+\section{Duplicating}{
+
+
+By default, all arguments are duplicated before being passed to the Fortran
+code. You may want to avoid duplicating some objects for performance
+reasons. If you know it is safe to skip duplicating, for example because
+the subroutine does not modify the object (e.g., the argument is declared in
+the subroutine manifest with \verb{intent(in)}), or you know for a fact that no
+other references to the SEXP will be used, you can avoid duplicating the
+object by passing \code{DUP=FALSE}. You can selectively duplicate only some
+objects by calling \code{\link[=.dup]{.dup()}} on them.
+}
+
+\examples{
+\dontrun{
+DLL <- dyn.load("my_shared_object.so")
+func_ptr <- getNativeSymbolInfo('my_subroutine', dll)$address
+.ModernFortran(func_ptr, arg1, arg2)
+
+# only duplicate arg1, arg2 is read-only (intent(in))
+.ModernFortran(func_ptr, .dup(arg1), arg2, DUP=FALSE)
+}
 }

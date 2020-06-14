@@ -100,30 +100,37 @@ CFI_cdesc_anyrank_t as_c_descriptor(SEXP x) {
 
 void call_fortran_subroutine(const DL_FUNC fsub, const unsigned nargs, CFI_cdesc_anyrank_t args[]);
 
-SEXP dot_ModernFortran(SEXP fsub_sexp, SEXP args) {
+SEXP dot_ModernFortran(SEXP fsub_sexp, SEXP args, SEXP dup_s) {
   DL_FUNC fsub = R_ExternalPtrAddrFn(fsub_sexp);
   unsigned nargs = LENGTH(args);
 
-  SEXP retval = PROTECT(Rf_duplicate(args));
-  /*
-   theoretically it's possible to avoid duplicating some of args,
-   but it's tricky to do with the official R api in a way that maintains compat with R 3.6 and
-   R 4.0. The macro MAYBE_SHARED() always returns true even for literals because the .Call and
-   .External interfaces increment refcounts on objects before we get them here. see sketches in R
-   code for a potential interface to selectively marking objects as read-only
-  */
+  int dup = Rf_asLogical(dup_s);
+  SEXP retval;
+  if (dup)
+    retval = PROTECT(Rf_duplicate(args));
+  else
+    retval = args;
+
   CFI_cdesc_anyrank_t *fargs = (CFI_cdesc_anyrank_t *)R_alloc(nargs, sizeof(CFI_cdesc_anyrank_t));
   for (unsigned i = 0; i < nargs; i++)
     fargs[i] = as_c_descriptor(VECTOR_ELT(retval, i));
 
   call_fortran_subroutine(fsub, nargs, fargs);
 
-  UNPROTECT(1);
+  if (dup)
+    UNPROTECT(1);
   return (retval);
 }
 
+SEXP dot_dup(SEXP x){
+  return Rf_duplicate(x);
+}
+
+#define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
+
 static const R_CallMethodDef CallEntries[] = {
-  {"dot_ModernFortran", (DL_FUNC)&dot_ModernFortran, 2},
+  CALLDEF(dot_ModernFortran, 2),
+  CALLDEF(dot_dup, 1),
   {NULL, NULL, 0}};
 
 void R_init_rfort(DllInfo *dll) {

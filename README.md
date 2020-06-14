@@ -122,4 +122,24 @@ cshift(1:10, -3)
 #>  [1]  8  9 10  1  2  3  4  5  6  7
 ```
 
+For the most part, the interface to `.ModernFortran` tries to match that
+of `.Fortran`. One area where `.ModernFortran` deviates a little is in
+regards to duplicating objects. A mechanism is provided for selectively
+duplicating only some of the SEXP objects. For example, we know the
+subroutine above only modifies the first argument, `array`, and does not
+modify the second argument, `shift`. We can use that and skip
+duplicating `shift` and only duplicate `array` like so.
+
+``` r
+cshift <- function(array, shift) {
+  RFI::.ModernFortran(func_ptr, 
+                      array = RFI::.dup(as.integer(array)), 
+                      shift = as.integer(shift),
+                      DUP=FALSE
+                      )$array
+}
+cshift(1:10, 3)
+#>  [1]  4  5  6  7  8  9 10  1  2  3
+```
+
 Tested with gfortran 9.2 and 9.3, R 3.6.3 and R 4.0.

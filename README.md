@@ -13,15 +13,15 @@ This R package provides `.ModernFortran()`, an interface similar to
 The 2018 Fortran language standard expanded support for interfacing C
 and Fortran. One of the additions is the introduction of *C
 descriptors*, a data structure for passing arrays between C and Fortran.
-This package takes advantage of this.
+This package takes advantage of that.
 
 In contrast with `.Fortran`, R arrays are not passed as naked pointers,
 but as *C descriptors* that contain information about rank, shape,
 element size, type, and memory stride of the array that the Fortran
-routine can access directly. This means that arguments for passing the
-size or rank of arrays is no longer needed, which should lead to
-cleaner, simpler Fortran code. Additionally, logical types are now
-supported directly.
+routine can access directly. This means that additional arguments for
+passing the size or rank of arrays are no longer needed, which should
+lead to cleaner, simpler Fortran code. Additionally, logical and raw
+types are now supported directly.
 
 Currently supported type conversions are:
 
@@ -31,6 +31,7 @@ Currently supported type conversions are:
 | `integer` | `integer(c_int)`            |
 | `double`  | `real(c_double)`            |
 | `complex` | `complex(c_double_complex)` |
+| `raw`     | `integer(c_int8_t)`         |
 
 ## Installation
 
@@ -94,10 +95,10 @@ Once the shared object is made, use it from R like so:
 # load the fortran module
 dll <- dyn.load(so_file)
 
-# get C pointer to the Fortran subroutine C entry point
+# get C pointer to the Fortran subroutine
 func_ptr <- getNativeSymbolInfo('my_subroutine', dll)$address
 
-# call the C function with R arrays
+# call the subroutine with R arrays
 RFI::.ModernFortran(func_ptr, array=1:5, shift=2L)
 #> $array
 #> [1] 3 4 5 1 2
@@ -132,11 +133,12 @@ duplicating `shift` and only duplicate `array` like so.
 
 ``` r
 cshift <- function(array, shift) {
-  RFI::.ModernFortran(func_ptr, 
-                      array = RFI::.dup(as.integer(array)), 
-                      shift = as.integer(shift),
-                      DUP=FALSE
-                      )$array
+  RFI::.ModernFortran(
+    func_ptr,
+    array = if (typeof(array) == "integer") RFI::.dup(array) else as.integer(array),
+    shift = as.integer(shift),
+    DUP = FALSE
+  )$array
 }
 cshift(1:10, 3)
 #>  [1]  4  5  6  7  8  9 10  1  2  3

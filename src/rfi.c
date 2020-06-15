@@ -9,6 +9,7 @@
 
 typedef CFI_CDESC_T(CFI_MAX_RANK) CFI_cdesc_anyrank_t;
 
+
 CFI_cdesc_anyrank_t as_c_descriptor(SEXP x) {
   CFI_rank_t rank = 0;
 
@@ -88,6 +89,12 @@ CFI_cdesc_anyrank_t as_c_descriptor(SEXP x) {
   }
   case CPLXSXP: {
     type = CFI_type_double_Complex;
+    break;
+  }
+  case RAWSXP: {
+    // TODO: assert that int8_t is same size as Rbyte
+    // TODO: should we use c_char here instead?
+    type = CFI_type_int8_t;
     break;
   }
   default:

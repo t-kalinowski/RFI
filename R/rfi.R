@@ -17,16 +17,16 @@
 #'   By default, all arguments are duplicated before being passed to the Fortran
 #'   code. You may want to avoid duplicating some objects for performance
 #'   reasons. If you know it is safe to skip duplicating, for example because
-#'   the subroutine does not modify the object (e.g., the argument is declared in
-#'   the subroutine manifest with `intent(in)`), or you know for a fact that no
-#'   other references to the SEXP will be used, you can avoid duplicating the
-#'   object by passing `DUP=FALSE`. You can selectively duplicate only some
-#'   objects by calling [`.dup()`] on them.
+#'   the subroutine does not modify the object (e.g., the argument is declared
+#'   in the subroutine manifest with `intent(in)`), or you know for a fact that
+#'   no other references to the SEXP will be used, you can avoid duplicating the
+#'   object by passing a 0-based integer vector of argument index positions to
+#'   `DUP`.
 #'
-#' @return A list of similar structure to  supplied to ..., but reflecting
+#' @return A list of similar structure to supplied to ..., but reflecting
 #'   changes made by the Fortran code
 #' @export
-#' @useDynLib RFI, dot_ModernFortran, dot_dup
+#' @useDynLib RFI, dot_ModernFortran
 #' @examples
 #' \dontrun{
 #' DLL <- dyn.load("my_shared_object.so")
@@ -34,7 +34,7 @@
 #' .ModernFortran(func_ptr, arg1, arg2)
 #'
 #' # only duplicate arg1, arg2 is read-only (intent(in))
-#' .ModernFortran(func_ptr, .dup(arg1), arg2, DUP=FALSE)
+#' .ModernFortran(func_ptr, arg1, arg2, DUP=0L)
 #' }
 .ModernFortran <- function(.NAME, ..., PACKAGE, DUP=TRUE) {
   if (!inherits(.NAME, "NativeSymbol")) {
@@ -45,18 +45,4 @@
   }
   .Call(dot_ModernFortran, .NAME, list(...), DUP)
 }
-
-
-#' Duplicate an SEXP
-#'
-#' This is an R wrapper around the C function `Rf_duplicate()`. This can be useful for
-#' selectively duplicating only some objects passed to [`.ModernFortran`]
-#'
-#' @param x any R object
-#'
-#' @return the same R object
-#' @export
-.dup <- function(x)
-  .Call(dot_dup, x)
-
 

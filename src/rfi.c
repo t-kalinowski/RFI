@@ -79,6 +79,16 @@ CFI_cdesc_anyrank_t as_c_descriptor(SEXP x) {
 
     return (desc);
   }
+  // case STRSXP: {
+  //   type = CFI_type_char;
+  //   if (x_len != 1)
+  //     Rf_error("Only character vectors of length 1 supported");
+
+  //   // CHAR() is meant to be read-only. 
+  //   // How to enforce the fortran routine does not modify?
+  //   void *data = CHAR(STRING_ELT(x, 0));
+
+  // }
   case INTSXP: {
     type = CFI_type_int;
     break;
@@ -111,12 +121,29 @@ SEXP dot_ModernFortran(SEXP fsub_sexp, SEXP args, SEXP dup_s) {
   DL_FUNC fsub = R_ExternalPtrAddrFn(fsub_sexp);
   unsigned nargs = LENGTH(args);
 
-  int dup = Rf_asLogical(dup_s);
-  SEXP retval;
-  if (dup)
-    retval = PROTECT(Rf_duplicate(args));
-  else
-    retval = args;
+  SEXP retval = args;
+  unsigned n_protected = 0;
+  switch (TYPEOF(dup_s)) {
+  case LGLSXP: {
+    if (Rf_asLogical(dup_s)) {
+      retval = PROTECT(Rf_duplicate(retval));
+      n_protected++;
+    }
+    break;
+  }
+  case INTSXP: {
+    unsigned n_dups = LENGTH(dup_s);
+    int *di = INTEGER(dup_s);
+    for (unsigned n = n_dups; n; n--) {
+      // no need to PROTECT since we're assigning right away to a protected list
+      SET_VECTOR_ELT(args, *di, Rf_duplicate(VECTOR_ELT(args, *di)));
+      di++;
+    }
+    break;
+  }
+  default:
+    Rf_error("Argument passed to dup must be a scalar logical or an integer vector");
+  }
 
   CFI_cdesc_anyrank_t *fargs = (CFI_cdesc_anyrank_t *)R_alloc(nargs, sizeof(CFI_cdesc_anyrank_t));
   for (unsigned i = 0; i < nargs; i++)
@@ -124,20 +151,15 @@ SEXP dot_ModernFortran(SEXP fsub_sexp, SEXP args, SEXP dup_s) {
 
   call_fortran_subroutine(fsub, nargs, fargs);
 
-  if (dup)
-    UNPROTECT(1);
+  if (n_protected)
+    UNPROTECT(n_protected);
   return (retval);
-}
-
-SEXP dot_dup(SEXP x){
-  return Rf_duplicate(x);
 }
 
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef CallEntries[] = {
-  CALLDEF(dot_ModernFortran, 2),
-  CALLDEF(dot_dup, 1),
+  CALLDEF(dot_ModernFortran, 2), 
   {NULL, NULL, 0}};
 
 void R_init_rfort(DllInfo *dll) {

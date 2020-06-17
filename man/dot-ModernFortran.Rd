@@ -20,7 +20,7 @@ are potentially modified in place. Use \code{\link{.dup}} to selectively duplica
 items.}
 }
 \value{
-A list of similar structure to  supplied to ..., but reflecting
+A list of similar structure to supplied to ..., but reflecting
 changes made by the Fortran code
 }
 \description{
@@ -32,11 +32,11 @@ Modern Fortran Interface
 By default, all arguments are duplicated before being passed to the Fortran
 code. You may want to avoid duplicating some objects for performance
 reasons. If you know it is safe to skip duplicating, for example because
-the subroutine does not modify the object (e.g., the argument is declared in
-the subroutine manifest with \verb{intent(in)}), or you know for a fact that no
-other references to the SEXP will be used, you can avoid duplicating the
-object by passing \code{DUP=FALSE}. You can selectively duplicate only some
-objects by calling \code{\link[=.dup]{.dup()}} on them.
+the subroutine does not modify the object (e.g., the argument is declared
+in the subroutine manifest with \verb{intent(in)}), or you know for a fact that
+no other references to the SEXP will be used, you can avoid duplicating the
+object by passing a 0-based integer vector of argument index positions to
+\code{DUP}.
 }
 
 \examples{
@@ -46,6 +46,6 @@ func_ptr <- getNativeSymbolInfo('my_subroutine', dll)$address
 .ModernFortran(func_ptr, arg1, arg2)
 
 # only duplicate arg1, arg2 is read-only (intent(in))
-.ModernFortran(func_ptr, .dup(arg1), arg2, DUP=FALSE)
+.ModernFortran(func_ptr, arg1, arg2, DUP=0L)
 }
 }

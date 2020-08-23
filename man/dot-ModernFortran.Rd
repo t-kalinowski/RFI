@@ -14,10 +14,11 @@ character string giving the name of the subroutine}
 
 \item{PACKAGE}{passed on to \code{\link[=getNativeSymbolInfo]{getNativeSymbolInfo()}}}
 
-\item{DUP}{logical. If \code{TRUE} (the default), all objects passed to \code{...} are
-duplicated before being passed to the Fortran code. If \code{FALSE}, all objects
-are potentially modified in place. Use \code{\link{.dup}} to selectively duplicate
-items.}
+\item{DUP}{a bool or integer vector. If \code{TRUE} (the default), all objects
+passed to \code{...} are duplicated before being passed to the Fortran code. If
+\code{FALSE}, no objects are duplicated and are potentially modified in place.
+If an integer vector, then only the positional arguments (using 0-based
+counting) corresponding to the integer values provided are duplicated.}
 }
 \value{
 A list of similar structure to supplied to ..., but reflecting

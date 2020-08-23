@@ -84,7 +84,7 @@ CFI_cdesc_anyrank_t as_c_descriptor(SEXP x) {
   //   if (x_len != 1)
   //     Rf_error("Only character vectors of length 1 supported");
 
-  //   // CHAR() is meant to be read-only. 
+  //   // CHAR() is meant to be read-only.
   //   // How to enforce the fortran routine does not modify?
   //   void *data = CHAR(STRING_ELT(x, 0));
 
@@ -159,10 +159,10 @@ SEXP dot_ModernFortran(SEXP fsub_sexp, SEXP args, SEXP dup_s) {
 #define CALLDEF(name, n)  {#name, (DL_FUNC) &name, n}
 
 static const R_CallMethodDef CallEntries[] = {
-  CALLDEF(dot_ModernFortran, 2), 
+  CALLDEF(dot_ModernFortran, 2),
   {NULL, NULL, 0}};
 
-void R_init_rfort(DllInfo *dll) {
+void R_init_RFI(DllInfo *dll) {
   R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
   R_useDynamicSymbols(dll, FALSE);
   R_forceSymbols(dll, TRUE);

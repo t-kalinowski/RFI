@@ -7,10 +7,11 @@
 #'   character string giving the name of the subroutine
 #' @param ... Arguments passed on to the Fortran subroutine.
 #' @param PACKAGE passed on to [`getNativeSymbolInfo()`]
-#' @param DUP logical. If `TRUE` (the default), all objects passed to `...` are
-#'   duplicated before being passed to the Fortran code. If `FALSE`, all objects
-#'   are potentially modified in place. Use [`.dup`] to selectively duplicate
-#'   items.
+#' @param DUP a bool or integer vector. If `TRUE` (the default), all objects
+#'   passed to `...` are duplicated before being passed to the Fortran code. If
+#'   `FALSE`, no objects are duplicated and are potentially modified in place.
+#'   If an integer vector, then only the positional arguments (using 0-based
+#'   counting) corresponding to the integer values provided are duplicated.
 #'
 #' @section Duplicating:
 #'

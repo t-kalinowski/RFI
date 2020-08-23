@@ -27,7 +27,7 @@
 #' @return A list of similar structure to supplied to ..., but reflecting
 #'   changes made by the Fortran code
 #' @export
-#' @useDynLib RFI, dot_ModernFortran
+#' @useDynLib RFI, .registration = TRUE
 #' @examples
 #' \dontrun{
 #' DLL <- dyn.load("my_shared_object.so")
